@@ -22,7 +22,6 @@ class _EditAddNotePageState extends State<EditAddNotePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       if (_firstTimeFlag == false) {
@@ -136,28 +135,16 @@ class _EditAddNotePageState extends State<EditAddNotePage> {
       DataBaseHelper.columnTitle: controllerTitle.text,
       DataBaseHelper.columnDescription: controllerDescription.text
     };
-    final result = await dbhelper.updateDiaryDetails(row);
+    final result = await dbhelper.updateDiaryDetails(row,DataBaseHelper.dataBaseDiaryTable);
     print('-------->$result');
-    Fluttertoast.showToast(
-        msg: 'Updated Successfully',
-        toastLength: Toast.LENGTH_SHORT,
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.teal,
-        textColor: Colors.white,
-        gravity: ToastGravity.BOTTOM);
+  Methods.toastMessage('Updated Successfully');
     Methods.navigateTo(context, HomePage());
   }
 
   void _delete() async {
-    final result = await dbhelper.deleteDiaryDetails(_selectedId);
+    final result = await dbhelper.deleteDiaryDetails(_selectedId,DataBaseHelper.dataBaseDiaryTable);
     print('Result ====>$result');
-    Fluttertoast.showToast(
-        msg: 'Deleted Successfully',
-        toastLength: Toast.LENGTH_SHORT,
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.teal,
-        textColor: Colors.white,
-        gravity: ToastGravity.BOTTOM);
+  Methods.toastMessage('Deleted Successfully');
     Methods.navigateTo(context, HomePage());
   }
 }

@@ -54,6 +54,7 @@ dependencies:
   getwidget:
   shared_preferences:
   intl:
+  flutter_spinkit:
 
 dev_dependencies:
   flutter_test:

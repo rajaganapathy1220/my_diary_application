@@ -94,19 +94,26 @@ class _AddNotePageState extends State<AddNotePage> {
   }
 
   onSave() async {
+    DateTime now = DateTime.now();
+
+    int year = now.year;
+    int month = now.month;
+    int day = now.day;
+    int hour = now.hour;
+    int minute = now.minute;
+    String paddedMonth = month < 10 ? '0$month' : '$month';
+    String paddedDay = day < 10 ? '0$day' : '$day';
+    String formattedDateTime = '$year-$paddedMonth-$paddedDay $hour:$minute';
+
     Map<String, dynamic> row = {
       DataBaseHelper.columnTitle: controllerTitle.text,
-      DataBaseHelper.columnDescription: controllerDescription.text
+      DataBaseHelper.columnDescription: controllerDescription.text,
+      DataBaseHelper.columnDateTime: formattedDateTime
     };
-    final result = await dbhelper.insertDiaryDetails(row);
+    final result = await dbhelper.insertDiaryDetails(
+        row, DataBaseHelper.dataBaseDiaryTable);
     print('-------->$result');
-    Fluttertoast.showToast(
-        msg: 'Saved Successfully',
-        toastLength: Toast.LENGTH_SHORT,
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.teal,
-        textColor: Colors.white,
-        gravity: ToastGravity.BOTTOM);
+    Methods.toastMessage('Saved Successfully');
     Methods.navigateTo(context, HomePage());
     controllerTitle.clear();
     controllerDescription.clear();

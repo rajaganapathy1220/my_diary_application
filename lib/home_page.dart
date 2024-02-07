@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 import 'package:my_diary_play_store_release/database_helper.dart';
 import 'package:my_diary_play_store_release/drawer_navigation.dart';
 import 'package:my_diary_play_store_release/edit_add_note_page.dart';
+import 'package:my_diary_play_store_release/help_page.dart';
 import 'package:my_diary_play_store_release/main.dart';
 import 'package:my_diary_play_store_release/methods.dart';
 import 'package:share_plus/share_plus.dart';
@@ -38,17 +40,6 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(color: Colors.teal.shade800),
         ),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: IconButton(
-              onPressed: () async {
-                await refreshData();
-              },
-              icon: Icon(Icons.refresh_sharp, color: Colors.teal, size: 29),
-            ),
-          )
-        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -58,9 +49,19 @@ class _HomePageState extends State<HomePage> {
           child: ListView.separated(
             itemCount: diaryDetailsList.length,
             separatorBuilder: (BuildContext context, int index) => SizedBox(
-              height: 10,
+              height: 25,
             ),
             itemBuilder: (BuildContext context, int index) {
+              DateTime dateTime =
+                  DateTime.parse(diaryDetailsList[index].dateTime);
+              String formattedYear = DateFormat('yyyy').format(dateTime);
+
+              String formattedMonth = DateFormat('MM').format(dateTime);
+
+              String formattedDate = DateFormat('dd').format(dateTime);
+
+              String formattedTime = DateFormat('HH:mm').format(dateTime);
+
               return GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
@@ -74,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Container(
                   height: 75,
-                  width: double.infinity,
+                  width:double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.teal.shade100,
                   ),
@@ -89,19 +90,19 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Text(
-                              'data',
+                             formattedMonth,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
                               ),
                             ),
-                            Text('2',
+                            Text(formattedDate,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleLarge
                                     ?.copyWith(color: Colors.white)),
                             Text(
-                              'data',
+                             formattedYear,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -121,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Container(
                         height: 100,
-                        width: 290,
+                        width: 250,
                         child: Column(
                           children: [
                             SizedBox(
@@ -147,14 +148,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Container(
-                       height: 75,
-                        width: 50,
+                        height: 75,
+                        width: 55,
                         alignment: Alignment.center,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 1.0),
                           child: Text(
                             // DateTime.parse(M),
-                            '12.30 ',
+                            formattedTime,
                             style: TextStyle(fontSize: 15, color: Colors.white),
                           ),
                         ),
@@ -191,17 +192,8 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.teal),
           SpeedDialChild(
               onTap: () {
-                print('-------->share button clicked');
-              },
-              shape: CircleBorder(),
-              child: Icon(
-                Icons.share,
-                color: Colors.teal.shade50,
-              ),
-              backgroundColor: Colors.teal),
-          SpeedDialChild(
-              onTap: () {
                 print('-------->help button clicked');
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HelpPage()));
               },
               shape: CircleBorder(),
               child: Icon(
@@ -215,7 +207,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   getDiaryDetailsRecords() async {
-    final diaryDetailsRecords = await dbhelper.getDiaryDetails();
+    final diaryDetailsRecords =
+        await dbhelper.getDiaryDetails(DataBaseHelper.dataBaseDiaryTable);
 
     diaryDetailsRecords.forEach((diaryDetailsRow) {
       setState(() {
@@ -226,7 +219,8 @@ class _HomePageState extends State<HomePage> {
         var diaryDetailsModel = ModelAddNote(
             diaryDetailsRow[DataBaseHelper.columnId],
             diaryDetailsRow[DataBaseHelper.columnTitle],
-            diaryDetailsRow[DataBaseHelper.columnDescription]);
+            diaryDetailsRow[DataBaseHelper.columnDescription],
+            diaryDetailsRow[DataBaseHelper.columnDateTime]);
         // diaryDetailsRow[DataBaseHelper.columnCreatedAt]);
         diaryDetailsList.add(diaryDetailsModel);
       });

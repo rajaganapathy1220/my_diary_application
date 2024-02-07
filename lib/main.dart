@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_diary_play_store_release/database_helper.dart';
-import 'package:my_diary_play_store_release/drawer_navigation.dart';
+import 'package:my_diary_play_store_release/help_page.dart';
+import 'package:my_diary_play_store_release/home_page.dart';
+import 'package:my_diary_play_store_release/personal_page.dart';
 
-import 'home_page.dart';
 
 final dbhelper = DataBaseHelper();
 
@@ -19,12 +20,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      home: HomePage(),
+      home:HomePage(),
     );
   }
 }

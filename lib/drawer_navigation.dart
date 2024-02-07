@@ -1,12 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:getwidget/components/avatar/gf_avatar.dart';
 import 'package:getwidget/components/drawer/gf_drawer.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_diary_play_store_release/home_page.dart';
+import 'package:my_diary_play_store_release/personal_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/widgets.dart';
 
@@ -20,18 +19,13 @@ class DrawerNavigation extends StatefulWidget {
 class _DrawerNavigationState extends State<DrawerNavigation> {
   final _controllerName = TextEditingController();
   String userName = '';
-  File? image;
-  late String imagePath;
-
-  var myImagepath;
-
-  late File imageTemp;
+  late String imagePath = '';
 
   @override
   void initState() {
     super.initState();
     loadValues();
-    loadImageSP();
+    getImageSP();
   }
 
   @override
@@ -48,12 +42,10 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                   SizedBox(
                     height: 15,
                   ),
-                  image != null
+                  imagePath != null
                       ? GFAvatar(
                           radius: 80,
-                          backgroundImage: FileImage(
-                            image!,
-                          ),
+                          backgroundImage: FileImage(File(imagePath)),
                         )
                       : CircleAvatar(
                           radius: 80,
@@ -140,23 +132,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
               },
             ),
           ),
-          SizedBox(
-            height: 15,
-            child: Divider(
-              indent: 55,
-              endIndent: 55,
-              thickness: 2,
-              color: Colors.teal,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 65.0),
-            child: ListTile(
-              leading: Icon(Icons.add_alert),
-              title: Text('Remainder'),
-              onTap: () {},
-            ),
-          ),
+
           SizedBox(
             height: 15,
             child: Divider(
@@ -171,7 +147,9 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
             child: ListTile(
               leading: Icon(Icons.person_add_alt_1),
               title: Text('Personal'),
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context)=>PersonalPage()));
+              },
             ),
           ),
           SizedBox(
@@ -213,6 +191,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                   IconButton(
                       onPressed: () {
                         print('---------->profile photo delete button clicked');
+                        showAlertProfileDialog();
                       },
                       icon: Icon(Icons.delete))
                 ],
@@ -233,7 +212,7 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                         shape: MaterialStatePropertyAll(CircleBorder())),
                     onPressed: () {
                       print('---------->profile upload camera button clicked');
-                      pickImageCamera();
+                      pickImage(ImageSource.camera);
                       Navigator.pop(context);
                     },
                     child: Icon(Icons.camera_alt),
@@ -248,8 +227,8 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
                       shape: MaterialStatePropertyAll(CircleBorder()),
                     ),
                     onPressed: () {
+                      pickImage(ImageSource.gallery);
                       print('---------->profile upload gallery button clicked');
-                      pickImageGallery();
                       Navigator.pop(context);
                     },
                     child: Icon(
@@ -322,54 +301,62 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
     print('$userName');
   }
 
-  Future pickImageGallery() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-
-      if (image == null) return;
-
-      imageTemp = File(image.path);
-
-      print('Gallery Image Path:');
-      print(image.path);
-
-      imagePath = image.path;
-
-      setState(() => this.image = imageTemp);
-    } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
+  Future<void> pickImage(ImageSource source) async {
+    final pickedImage = await ImagePicker().pickImage(source: source);
+    if (pickedImage != null) {
+      setState(() {
+        imagePath = pickedImage.path;
+      });
+      saveImageSP('ProfileImage', imagePath);
     }
   }
 
-  Future pickImageCamera() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.camera);
-
-      if (image == null) return;
-
-      final imageTemp = File(image.path);
-
-      print('Camera Image Path:');
-      print(image.path);
-
-      imagePath = image.path;
-
-      setState(() => this.image = imageTemp);
-    } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
-    }
-  }
-
-  saveImageSP() async {
+  saveImageSP(String key, String value) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.setString('profileImage', image?.path ?? '');
+    sharedPreferences.setString(key, value);
   }
 
-  loadImageSP() async {
+  getImageSP() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
-      myImagepath = sharedPreferences.getString('profileImage');
-      image = myImagepath as File?;
+      imagePath = sharedPreferences.getString('ProfileImage') ?? '';
     });
+  }
+
+  deleteImage() async {
+    if (imagePath.isNotEmpty) {
+      await File(imagePath).delete();
+      setState(() {
+        imagePath = '';
+      });
+      saveImageSP('ProfileImage', imagePath);
+    }
+  }
+  showAlertProfileDialog() {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Do you want delete the Profile Picture ?'),
+
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                print('-------->Yes button clicked');
+               deleteImage();
+               Navigator.pop(context);
+              },
+              child: Text('Yes'),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                  print('-------->No button clicked');
+                  Navigator.pop(context);
+                },
+                child: Text('No'))
+          ],
+        );
+      },
+    );
   }
 }
